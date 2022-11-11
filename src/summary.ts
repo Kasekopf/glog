@@ -1,6 +1,6 @@
 import { Ascension } from "./parser";
 
-class Counter {
+export class Counter {
   private base: Map<string, number>;
 
   constructor(base?: Map<string, number>) {
@@ -20,6 +20,10 @@ class Counter {
     return result;
   }
 
+  get(key: string): number {
+    return this.base.get(key) ?? 0;
+  }
+
   /**
    * @returns The counted entries, sorted in decreasing order.
    */
@@ -27,7 +31,7 @@ class Counter {
     return [...this.base.entries()].sort((a, b) => a[1] - b[1]);
   }
 
-  static average(...counters: Counter[]) {
+  static average(...counters: Counter[]): Counter {
     const result = new Counter();
     for (const counter of counters) {
       for (const entry of counter.base.entries()) {
