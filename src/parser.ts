@@ -20,11 +20,12 @@ interface AscensionHeader {
   moonsign: string;
 }
 
-interface Ascension extends AscensionHeader {
+export interface Ascension extends AscensionHeader {
   turns: Turn[];
+  complete: boolean;
 }
 
-interface Turn {
+export interface Turn {
   location: string;
   turn: number;
   prefs: Preference[];
@@ -138,6 +139,17 @@ export class Parser {
     return {
       ...header,
       turns: turns,
+      complete: !this.finished(),
     };
+  }
+
+  parseAscensions(): Ascension[] {
+    const result: Ascension[] = [];
+    while (!this.finished()) {
+      const nextAscension = this.parseAscension();
+      if (!nextAscension) break;
+      result.push(nextAscension);
+    }
+    return result;
   }
 }
