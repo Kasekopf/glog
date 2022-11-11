@@ -1,5 +1,5 @@
 import { Args } from "grimoire-kolmafia";
-import { print, sessionLogs } from "kolmafia";
+import { print, printHtml, sessionLogs } from "kolmafia";
 import { Ascension, Parser } from "./parser";
 import { AscensionSummary, Counter } from "./summary";
 
@@ -13,6 +13,14 @@ export const args = Args.create(
     }),
     run: Args.number({
       help: "Look at the run that occured this many days ago, (0 meaning today, 1 meaning yesterday, etc.). If not given, look at your most recent run.",
+    }),
+    farming: Args.string({
+      help: "Zones to exclude as part of in-ronin farming, comma-separated.",
+      default: "Barf Mountain",
+    }),
+    hide: Args.boolean({
+      help: "Hide all zones that took exactly the average amount of turns.",
+      default: true,
     }),
   }
 );
@@ -42,6 +50,8 @@ export function main(command?: string): void {
     return;
   }
 
+  const farming = args.farming.split(",");
+
   const others = runs.getAllCompleted(args.history).filter((asc) => asc.id !== toAnalyze.id);
 
   const summary = new AscensionSummary(toAnalyze);
@@ -50,9 +60,16 @@ export function main(command?: string): void {
   const averageRun = Counter.average(...othersSummary.map((s) => s.turns_spent));
   const turnDiff = summary.turns_spent.diff(averageRun);
   for (const [loc, diff] of turnDiff.entries()) {
-    const diffFormatted = diff < 0 ? `${diff.toFixed(2)}` : `+${diff.toFixed(2)}`;
-    print(`${loc}: ${summary.turns_spent.get(loc)} (${diffFormatted})`);
+    if (farming.includes(loc)) continue;
+    if (args.hide && diff === 0) continue;
+    printHtml(`${loc}: ${summary.turns_spent.get(loc)} (${formatDiff(diff)})`);
   }
+}
+
+function formatDiff(diff: number) {
+  if (diff < 0) return `<font color='blue'>${diff.toFixed(2)}</font>`;
+  else if (diff === 0) return `<font color='grey'>0</font>`;
+  else return `<font color='red'>+${diff.toFixed(2)}</font>`;
 }
 
 class RunCache {

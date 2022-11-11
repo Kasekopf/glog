@@ -25,10 +25,10 @@ export class Counter {
   }
 
   /**
-   * @returns The counted entries, sorted in decreasing order.
+   * @returns The counted entries, sorted in increasing order.
    */
   entries(): [string, number][] {
-    return [...this.base.entries()].sort((a, b) => a[1] - b[1]);
+    return [...this.base.entries()].sort((a, b) => b[1] - a[1]);
   }
 
   static average(...counters: Counter[]): Counter {
