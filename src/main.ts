@@ -18,9 +18,8 @@ export const args = Args.create(
       help: "Zones to exclude as part of in-ronin farming, comma-separated.",
       default: "Barf Mountain",
     }),
-    hide: Args.boolean({
-      help: "Hide all zones that took exactly the average amount of turns.",
-      default: true,
+    cutoff: Args.number({
+      help: "Only display diffs which are larger in magnitude than this number.",
     }),
   }
 );
@@ -63,10 +62,24 @@ export function main(command?: string): void {
   if (othersSummary.length > 0)
     printHtml(`Summary of Grey You run (vs. average of last ${othersSummary.length} runs):`);
   else printHtml(`Summary of Grey You run:`);
+  let displayedCutoff = false;
   for (const [loc, diff] of turnDiff.entries()) {
     if (farming.includes(loc)) continue;
     nonFarmingSum += summary.turns_spent.get(loc);
-    if (args.hide && diff === 0) continue;
+    if (args.cutoff !== undefined && Math.abs(diff) <= args.cutoff) {
+      if (!displayedCutoff) {
+        if (args.cutoff === 0)
+          printHtml(
+            `&nbsp;&nbsp;&nbsp;<font color='#888888'>- removing entries with no change from average -</font>`
+          );
+        else
+          printHtml(
+            `&nbsp;&nbsp;&nbsp;<font color='#888888'>- removing entries with change &lt;= ${args.cutoff} from average -</font>`
+          );
+      }
+      displayedCutoff = true;
+      continue;
+    }
     if (othersSummary.length > 0)
       printHtml(
         `&nbsp;&nbsp;&nbsp;${loc}: <b>${summary.turns_spent.get(loc)} ${formatDiff(diff)}</b>`
