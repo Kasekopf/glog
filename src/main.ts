@@ -1,6 +1,6 @@
 import { Args } from "grimoire-kolmafia";
 import { print, printHtml, sessionLogs } from "kolmafia";
-import { Ascension, Parser } from "./parser";
+import { Ascension, LoopgyouStatus, Parser } from "./parser";
 import { AscensionSummary, Counter } from "./summary";
 
 export const args = Args.create(
@@ -59,17 +59,53 @@ export function main(command?: string): void {
 
   const averageRun = Counter.average(...othersSummary.map((s) => s.turns_spent));
   const turnDiff = summary.turns_spent.diff(averageRun);
+  let nonFarmingSum = 0;
+  if (othersSummary.length > 0)
+    printHtml(`Summary of Grey You run (vs. average of last ${othersSummary.length} runs):`);
+  else printHtml(`Summary of Grey You run:`);
   for (const [loc, diff] of turnDiff.entries()) {
     if (farming.includes(loc)) continue;
+    nonFarmingSum += summary.turns_spent.get(loc);
     if (args.hide && diff === 0) continue;
-    printHtml(`${loc}: ${summary.turns_spent.get(loc)} (${formatDiff(diff)})`);
+    if (othersSummary.length > 0)
+      printHtml(
+        `&nbsp;&nbsp;&nbsp;${loc}: <b>${summary.turns_spent.get(loc)} ${formatDiff(diff)}</b>`
+      );
+    else printHtml(`&nbsp;&nbsp;&nbsp;${loc}: <b>${summary.turns_spent.get(loc)}</b>`);
+  }
+  printHtml(``);
+  printHtml(`Total turns spent as Grey You: <b>${summary.turns_spent.sum()}</b>`);
+  printHtml(`&nbsp;&nbsp;&nbsp;Non-farming turns: <b>${nonFarmingSum}</b>`);
+  if (toAnalyze.scriptStatus.length > 0) {
+    const status = toAnalyze.scriptStatus[0];
+
+    const otherStatus = othersSummary
+      .map((sum) => sum.scriptStatus())
+      .filter((status) => status !== undefined) as LoopgyouStatus[];
+    const otherUsed =
+      otherStatus.length > 0
+        ? status.used - otherStatus.reduce((a, b) => a + b.used, 0) / otherStatus.length
+        : undefined;
+    const otherRemaining =
+      otherStatus.length > 0
+        ? status.remaining - otherStatus.reduce((a, b) => a + b.remaining, 0) / otherStatus.length
+        : undefined;
+    printHtml(
+      `&nbsp;&nbsp;&nbsp;Adventures used at halt: <b>${status.used} ${formatDiff(otherUsed)}</b>`
+    );
+    printHtml(
+      `&nbsp;&nbsp;&nbsp;Adventures remaining at halt: <b>${status.remaining} ${formatDiff(
+        otherRemaining
+      )}</b>`
+    );
   }
 }
 
-function formatDiff(diff: number) {
-  if (diff < 0) return `<font color='blue'>${diff.toFixed(2)}</font>`;
-  else if (diff === 0) return `<font color='grey'>0</font>`;
-  else return `<font color='red'>+${diff.toFixed(2)}</font>`;
+function formatDiff(diff: number | undefined) {
+  if (diff === undefined) return "";
+  if (diff < 0) return `(<font color='blue'>${diff.toFixed(2)}</font>)`;
+  else if (diff === 0) return `(<font color='grey'>0</font>)`;
+  else return `(<font color='red'>+${diff.toFixed(2)}</font>)`;
 }
 
 class RunCache {

@@ -1,4 +1,4 @@
-import { Ascension } from "./parser";
+import { Ascension, LoopgyouStatus } from "./parser";
 
 export class Counter {
   private base: Map<string, number>;
@@ -18,6 +18,10 @@ export class Counter {
       result.increment(entry[0], -1 * entry[1]);
     }
     return result;
+  }
+
+  sum(): number {
+    return [...this.base.values()].reduce((a, b) => a + b, 0);
   }
 
   get(key: string): number {
@@ -60,6 +64,11 @@ export class AscensionSummary {
       this.attempts.increment(location);
       if (!turn.free) this.turns_spent.increment(location);
     }
+  }
+
+  scriptStatus(): LoopgyouStatus | undefined {
+    if (this.raw.scriptStatus.length === 0) return undefined;
+    return this.raw.scriptStatus[0];
   }
 }
 

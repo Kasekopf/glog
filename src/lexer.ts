@@ -1,3 +1,4 @@
+/* eslint-disable no-regex-spaces */
 export interface Token {
   raw: string;
 }
@@ -99,23 +100,6 @@ class Lexer {
 }
 const LEXER = new Lexer();
 
-export function tokenize(log: string): Token[] {
-  return log
-    .split("\n")
-    .filter((line) => line.length > 1)
-    .map((line) => LEXER.match(line));
-}
-
-/**
- * The remainder of this file is a list of parsing rules for a type of line.
- *
- * Each constructor should accept a number of string arguments equal (or smaller)
- * than the number of regex groups.
- */
-
-export class CLIText extends RawToken {}
-LEXER.addPrefix(">", CLIText); // Only CLI output we want to parse should be above this
-
 export class KingFreed extends RawToken {}
 LEXER.addRaw("Preference kingLiberated changed from false to true", KingFreed);
 
@@ -155,3 +139,49 @@ export class AscensionID implements Token {
   }
 }
 LEXER.addRegex("A", /^Ascension #(\d+):/, AscensionID);
+
+class CLILexer {
+  matchers: TokenMatcher<Token>[] = [];
+
+  addRegex<T extends Token>(regex: RegExp, token: new (...args: string[]) => T) {
+    this.matchers.push(new RegexMatcher(regex, token));
+  }
+
+  match(line: string): Token {
+    for (const matcher of this.matchers) {
+      const result = matcher.match(line);
+      if (result) return result;
+    }
+    return new CLIText(line);
+  }
+}
+
+const CLI_LEXER = new CLILexer();
+
+export class CLIText extends RawToken {}
+
+export class LoopgyouCompleteHeader extends RawToken {}
+CLI_LEXER.addRegex(/> Grey you (partially )?complete/, LoopgyouCompleteHeader);
+
+export class AdvUsedHeader implements Token {
+  readonly adv: number;
+  constructor(readonly raw: string, adv: string) {
+    this.adv = parseInt(adv);
+  }
+}
+CLI_LEXER.addRegex(/>    Adventures used: (\d+)/, AdvUsedHeader);
+
+export class AdvRemainingHeader implements Token {
+  readonly adv: number;
+  constructor(readonly raw: string, adv: string) {
+    this.adv = parseInt(adv);
+  }
+}
+CLI_LEXER.addRegex(/>    Adventures remaining: (\d+)/, AdvRemainingHeader);
+
+export function tokenize(log: string): Token[] {
+  return log
+    .split("\n")
+    .filter((line) => line.length > 1)
+    .map((line) => (line.startsWith(">") ? CLI_LEXER.match(line) : LEXER.match(line)));
+}

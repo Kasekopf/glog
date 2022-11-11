@@ -1,10 +1,13 @@
 import {
+  AdvRemainingHeader,
+  AdvUsedHeader,
   AscensionID,
   AscensionSeparator,
   AscensionStart,
   CLIText,
   Encounter,
   KingFreed,
+  LoopgyouCompleteHeader,
   Preference,
   Token,
   tokenize,
@@ -23,6 +26,7 @@ interface AscensionHeader {
 export interface Ascension extends AscensionHeader {
   turns: Turn[];
   complete: boolean;
+  scriptStatus: LoopgyouStatus[];
 }
 
 export interface Turn {
@@ -31,6 +35,11 @@ export interface Turn {
   prefs: Preference[];
   encs: Encounter[];
   free: boolean;
+}
+
+export interface LoopgyouStatus {
+  used: number;
+  remaining: number;
 }
 
 export class Parser {
@@ -90,6 +99,17 @@ export class Parser {
     return next;
   }
 
+  private tryConsume<T extends Token>(target: ClassOf<T>): T | undefined {
+    if (this.index >= this.lines.length) return undefined;
+
+    const next = this.lines[this.index];
+    this.index++;
+    if (!target) return next as T;
+    if (this.index >= this.lines.length) return undefined;
+    if (!(next instanceof target)) return undefined;
+    return next;
+  }
+
   parseAscensionHeader(): AscensionHeader | undefined {
     this.consumeNext(AscensionStart);
     if (this.finished()) return undefined;
@@ -129,17 +149,30 @@ export class Parser {
     if (!header) return undefined;
 
     const turns: Turn[] = [];
+    const status: LoopgyouStatus[] = [];
     while (!this.finished()) {
       const next = this.peek();
       if (next instanceof TurnHeader) turns.push(this.parseTurn());
       else if (next instanceof AscensionStart) break;
       else if (next instanceof KingFreed) break;
+      else if (next instanceof LoopgyouCompleteHeader) status.push(this.parseLoopgyouStatus());
       else this.consume();
     }
     return {
       ...header,
       turns: turns,
+      scriptStatus: status,
       complete: !this.finished(),
+    };
+  }
+
+  parseLoopgyouStatus(): LoopgyouStatus {
+    this.consume(LoopgyouCompleteHeader);
+    const used = this.consume(AdvUsedHeader);
+    const remaining = this.consume(AdvRemainingHeader);
+    return {
+      used: used.adv,
+      remaining: remaining.adv,
     };
   }
 
