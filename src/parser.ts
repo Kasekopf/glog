@@ -34,7 +34,7 @@ export interface Turn {
   turn: number;
   prefs: Preference[];
   encs: Encounter[];
-  free: boolean;
+  advcost: number;
 }
 
 export interface LoopgyouStatus {
@@ -129,7 +129,7 @@ export class Parser {
     const result: Turn = {
       location: header.location,
       turn: header.turn,
-      free: this.peek(TurnHeader)?.turn === header.turn,
+      advcost: (this.peek(TurnHeader)?.turn ?? header.turn + 1) - header.turn,
       prefs: [],
       encs: [],
     };

@@ -62,7 +62,7 @@ export class AscensionSummary {
       const location = normalizeLocationName(turn.location);
 
       this.attempts.increment(location);
-      if (!turn.free) this.turns_spent.increment(location);
+      this.turns_spent.increment(location, turn.advcost);
     }
   }
 
