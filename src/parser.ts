@@ -129,7 +129,9 @@ export class Parser {
     const result: Turn = {
       location: header.location,
       turn: header.turn,
-      advcost: (this.peek(TurnHeader)?.turn ?? header.turn + 1) - header.turn,
+      advcost:
+        (this.peek(TurnHeader)?.turn ?? header.turn + getDefaultAdvCost(header.location)) -
+        header.turn,
       prefs: [],
       encs: [],
     };
@@ -185,4 +187,11 @@ export class Parser {
     }
     return result;
   }
+}
+
+function getDefaultAdvCost(name: string): number {
+  // If this script is run immediately after breaking the prism, do not count it as a turn.
+  if (name === "Freeing King Ralph") return 0;
+  if (name === "The Shore, Inc. Travel Agency") return 3;
+  return 1;
 }
