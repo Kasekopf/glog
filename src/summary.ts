@@ -73,9 +73,37 @@ export class AscensionSummary {
 }
 
 function normalizeLocationName(location: string): string {
-  const prefixes = ["Cook", "The Hedge Maze", "The Typical Tavern Cellar", "The Lower Chambers"];
+  const prefixes = [
+    "Cook",
+    "The Hedge Maze",
+    "The Typical Tavern Cellar",
+    "The Lower Chambers",
+    "The Daily Dungeon",
+    "Tower Level",
+  ];
   for (const prefix of prefixes) {
     if (location.startsWith(prefix)) return prefix;
   }
+
+  if (
+    [
+      "Strongest Adventurer Contest",
+      "Smartest Adventurer Contest",
+      "Smoothest Adventurer Contest",
+    ].includes(location)
+  )
+    return "Stat Adventurer Contest";
+  if (
+    [
+      "Hottest Adventurer Contest",
+      "Sleaziest Adventurer Contest",
+      "Spookiest Adventurer Contest",
+      "Coldest Adventurer Contest",
+      "Stinkiest Adventurer Contest",
+    ].includes(location)
+  )
+    return "Element Adventurer Contest";
+
+  if (location === "rusty hedge trimmers") return "Twin Peak";
   return location;
 }
