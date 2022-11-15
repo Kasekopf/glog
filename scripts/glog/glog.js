@@ -5342,6 +5342,8 @@ function normalizeLocationName(location) {
   if (location === "rusty hedge trimmers") return "Twin Peak";
   return location;
 }
+;// CONCATENATED MODULE: ./src/_git_commit.ts
+var lastCommitHash = "9c2989e";
 ;// CONCATENATED MODULE: ./src/main.ts
 function main_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -5377,6 +5379,7 @@ function main_arrayLikeToArray(arr, len) { if (len == null || len > arr.length) 
 
 
 
+
 var args = Args.create("glog", 'This is a script to analyze your Grey You log. Run "glog" without quotes to summarize your most recent run within the last week.', {
   version: Args.flag({
     help: "Show script version and exit.",
@@ -5403,6 +5406,10 @@ function main(command) {
   if (args.help) {
     Args.showHelp(args);
     return;
+  }
+
+  if (args.version) {
+    (0,external_kolmafia_namespaceObject.print)("Running glog version [".concat(lastCommitHash !== null && lastCommitHash !== void 0 ? lastCommitHash : "custom-built", "] in KoLmafia r").concat((0,external_kolmafia_namespaceObject.getRevision)()));
   }
 
   if (args.run && args.run < 0) {
