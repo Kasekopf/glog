@@ -1,7 +1,8 @@
 import { Args } from "grimoire-kolmafia";
-import { print, printHtml, sessionLogs } from "kolmafia";
+import { getRevision, print, printHtml, sessionLogs } from "kolmafia";
 import { Ascension, Parser, ScriptStatus } from "./parser";
 import { AscensionSummary, Counter } from "./summary";
+import { lastCommitHash } from "./_git_commit";
 
 export const args = Args.create(
   "glog",
@@ -29,6 +30,12 @@ export function main(command?: string): void {
   if (args.help) {
     Args.showHelp(args);
     return;
+  }
+
+  if (args.version) {
+    print(
+      `Running glog version [${lastCommitHash ?? "custom-built"}] in KoLmafia r${getRevision()}`
+    );
   }
 
   if (args.run && args.run < 0) {
