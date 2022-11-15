@@ -169,7 +169,7 @@ class RunCache {
    * @param day The number of days back to look, including today.
    */
   get(day: number): Ascension | undefined {
-    this.expandCache(day);
+    this.expandCache(day + 1);
     if (this.runs[day].length === 0) return undefined;
     return this.runs[day][0];
   }
