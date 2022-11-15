@@ -1,6 +1,6 @@
 # GLog
 
-This is a log parser for Grey You runs. You can use it to compare your most recent run to your average performance.
+This is a log analyzer for Grey You runs. You can use it to compare your most recent run to your average performance, to see what went well this run, what went poorly, and (in the future) what could be improved.
 
 ## Installation
 
