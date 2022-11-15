@@ -1,6 +1,6 @@
 import { Args } from "grimoire-kolmafia";
 import { print, printHtml, sessionLogs } from "kolmafia";
-import { Ascension, LoopgyouStatus, Parser } from "./parser";
+import { Ascension, Parser, ScriptStatus } from "./parser";
 import { AscensionSummary, Counter } from "./summary";
 
 export const args = Args.create(
@@ -95,7 +95,7 @@ export function main(command?: string): void {
 
     const otherStatus = othersSummary
       .map((sum) => sum.scriptStatus())
-      .filter((status) => status !== undefined) as LoopgyouStatus[];
+      .filter((status) => status !== undefined) as ScriptStatus[];
     const otherUsed =
       otherStatus.length > 0
         ? status.used - otherStatus.reduce((a, b) => a + b.used, 0) / otherStatus.length

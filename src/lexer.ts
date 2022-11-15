@@ -179,6 +179,19 @@ export class AdvRemainingHeader implements Token {
 }
 CLI_LEXER.addRegex(/>    Adventures remaining: (\d+)/, AdvRemainingHeader);
 
+export class GreydayUsedRemaining implements Token {
+  readonly used: number;
+  readonly remaining: number;
+  constructor(readonly raw: string, used: string, remaining: string) {
+    this.used = parseInt(used);
+    this.remaining = parseInt(remaining);
+  }
+}
+CLI_LEXER.addRegex(
+  /Took (\d+) turns this run! (\d+) turns left to play with!/,
+  GreydayUsedRemaining
+);
+
 export function tokenize(log: string): Token[] {
   return log
     .split("\n")

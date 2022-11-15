@@ -6,6 +6,7 @@ import {
   AscensionStart,
   CLIText,
   Encounter,
+  GreydayUsedRemaining,
   KingFreed,
   LoopgyouCompleteHeader,
   Preference,
@@ -26,7 +27,7 @@ interface AscensionHeader {
 export interface Ascension extends AscensionHeader {
   turns: Turn[];
   complete: boolean;
-  scriptStatus: LoopgyouStatus[];
+  scriptStatus: ScriptStatus[];
 }
 
 export interface Turn {
@@ -37,7 +38,7 @@ export interface Turn {
   advcost: number;
 }
 
-export interface LoopgyouStatus {
+export interface ScriptStatus {
   used: number;
   remaining: number;
 }
@@ -151,13 +152,14 @@ export class Parser {
     if (!header) return undefined;
 
     const turns: Turn[] = [];
-    const status: LoopgyouStatus[] = [];
+    const status: ScriptStatus[] = [];
     while (!this.finished()) {
       const next = this.peek();
       if (next instanceof TurnHeader) turns.push(this.parseTurn());
       else if (next instanceof AscensionStart) break;
       else if (next instanceof KingFreed) break;
       else if (next instanceof LoopgyouCompleteHeader) status.push(this.parseLoopgyouStatus());
+      else if (next instanceof GreydayUsedRemaining) status.push(this.parseGreydayStatus());
       else this.consume();
     }
     return {
@@ -168,13 +170,21 @@ export class Parser {
     };
   }
 
-  parseLoopgyouStatus(): LoopgyouStatus {
+  parseLoopgyouStatus(): ScriptStatus {
     this.consume(LoopgyouCompleteHeader);
     const used = this.consume(AdvUsedHeader);
     const remaining = this.consume(AdvRemainingHeader);
     return {
       used: used.adv,
       remaining: remaining.adv,
+    };
+  }
+
+  parseGreydayStatus(): ScriptStatus {
+    const output = this.consume(GreydayUsedRemaining);
+    return {
+      used: output.used,
+      remaining: output.remaining,
     };
   }
 

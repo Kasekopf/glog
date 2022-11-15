@@ -1,4 +1,4 @@
-import { Ascension, LoopgyouStatus } from "./parser";
+import { Ascension, ScriptStatus } from "./parser";
 
 export class Counter {
   private base: Map<string, number>;
@@ -66,7 +66,7 @@ export class AscensionSummary {
     }
   }
 
-  scriptStatus(): LoopgyouStatus | undefined {
+  scriptStatus(): ScriptStatus | undefined {
     if (this.raw.scriptStatus.length === 0) return undefined;
     return this.raw.scriptStatus[0];
   }
