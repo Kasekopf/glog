@@ -5343,7 +5343,7 @@ function normalizeLocationName(location) {
   return location;
 }
 ;// CONCATENATED MODULE: ./src/_git_commit.ts
-var lastCommitHash = "9c2989e";
+var lastCommitHash = "caf4368";
 ;// CONCATENATED MODULE: ./src/main.ts
 function main_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -5549,7 +5549,7 @@ var RunCache = /*#__PURE__*/function () {
   }, {
     key: "get",
     value: function get(day) {
-      this.expandCache(day);
+      this.expandCache(day + 1);
       if (this.runs[day].length === 0) return undefined;
       return this.runs[day][0];
     }
