@@ -7,6 +7,7 @@ export const args = Args.create(
   "glog",
   'This is a script to analyze your Grey You log. Run "glog" without quotes to summarize your most recent run within the last week.',
   {
+    version: Args.flag({ help: "Show script version and exit.", setting: "" }),
     history: Args.number({
       help: "Number of days back to look for Grey You logs, including today.",
       default: 7,
