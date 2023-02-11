@@ -14,7 +14,7 @@ export const args = Args.create(
       help: "Number of days back to look for Grey You logs, including today.",
       default: 7,
     }),
-    run: Args.number({
+    run: Args.string({
       help: "Look at the run that occured this many days ago, (0 meaning today, 1 meaning yesterday, etc.). If not given, look at your most recent run.",
     }),
     farming: Args.locations({
@@ -39,24 +39,14 @@ export function main(command?: string): void {
     );
   }
 
-  if (args.run && args.run < 0) {
-    print("Invalid argument for run");
-  }
   if (args.history < 0) {
     print("Invalid argument for history");
   }
 
   const runs = new RunCache();
 
-  const toAnalyze = args.run === undefined ? runs.getMostRecent(args.history) : runs.get(args.run);
-  if (toAnalyze === undefined) {
-    if (args.run === undefined) {
-      print(`Unable to find any recent Grey You runs within the last ${args.history} days.`);
-    } else {
-      print(`Unable to find any Grey You runs ${args.run} days ago`);
-    }
-    return;
-  }
+  const toAnalyze = getRunToAnalyze(runs);
+  if (!toAnalyze) return;
 
   const farming = args.farming.map((loc) => `${loc}`);
 
@@ -130,6 +120,25 @@ function formatDiff(diff: number | undefined) {
   else return `(<font color='red'>+${diff.toFixed(2)}</font>)`;
 }
 
+function getRunToAnalyze(runs: RunCache): Ascension | undefined {
+  if (!args.run) {
+    const result = runs.getMostRecent(args.history);
+    if (!result)
+      print(`Unable to find any recent Grey You runs within the last ${args.history} days.`, "red");
+    return result;
+  }
+
+  const runNumber = Number(args.run);
+  if (!isNaN(runNumber) && runNumber >= 0) {
+    const result = runs.get(runNumber);
+    if (!result) print(`Unable to find any Grey You runs ${args.run} days ago`, "red");
+    return result;
+  }
+
+  print(`Unable to understand run=${args.run}`);
+  return undefined;
+}
+
 class RunCache {
   runs: Ascension[][] = [];
 
@@ -138,8 +147,7 @@ class RunCache {
     const logs = sessionLogs(limit);
     while (this.runs.length < limit) {
       const log = logs[this.runs.length]; // get the next log we have not parsed
-      const parser = new Parser(log);
-      this.runs.push(parser.parseAscensions().filter((asc) => asc.path.includes("Grey You")));
+      this.runs.push(Parser.findGreyYouRuns(log));
     }
   }
 

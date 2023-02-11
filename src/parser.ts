@@ -47,6 +47,11 @@ export class Parser {
   lines: Token[];
   private index: number;
 
+  static findGreyYouRuns(log: string): Ascension[] {
+    const parser = new Parser(log);
+    return parser.parseAscensions().filter((asc) => asc.path.includes("Grey You"));
+  }
+
   constructor(log: string) {
     this.lines = tokenize(log);
     this.index = 0;
