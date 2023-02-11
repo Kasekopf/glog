@@ -1,5 +1,5 @@
 import { Args } from "grimoire-kolmafia";
-import { getRevision, print, printHtml, sessionLogs } from "kolmafia";
+import { fileToBuffer, getRevision, print, printHtml, sessionLogs } from "kolmafia";
 import { Ascension, Parser, ScriptStatus } from "./parser";
 import { AscensionSummary, Counter } from "./summary";
 import { lastCommitHash } from "./_git_commit";
@@ -15,7 +15,7 @@ export const args = Args.create(
       default: 7,
     }),
     run: Args.string({
-      help: "Look at the run that occured this many days ago, (0 meaning today, 1 meaning yesterday, etc.). If not given, look at your most recent run.",
+      help: "If this is a number, look at the run that occured this many days ago, (0 meaning today, 1 meaning yesterday, etc.). If this is a file in your data folder, parse it for a log. If not given, look at your most recent run.",
     }),
     farming: Args.locations({
       help: "Zones to exclude as part of in-ronin farming, comma-separated.",
@@ -128,11 +128,26 @@ function getRunToAnalyze(runs: RunCache): Ascension | undefined {
     return result;
   }
 
+  // If args.run is a number, load that run from the cache
   const runNumber = Number(args.run);
   if (!isNaN(runNumber) && runNumber >= 0) {
     const result = runs.get(runNumber);
     if (!result) print(`Unable to find any Grey You runs ${args.run} days ago`, "red");
     return result;
+  }
+
+  // If args.run is a file in the data folder, try to parse it as a log
+  const runFileContents = fileToBuffer(args.run);
+  if (runFileContents.length > 0) {
+    const results = Parser.findGreyYouRuns(runFileContents);
+    if (results.length === 0) {
+      print(`Unable to find any Grey You runs in data/${args.run}`, "red");
+      return undefined;
+    }
+    if (results.length > 1) {
+      print(`Found ${results.length} runs in data/${args.run}; analyzing the first run`);
+    }
+    return results[0];
   }
 
   print(`Unable to understand run=${args.run}`);
