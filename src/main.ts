@@ -3,6 +3,7 @@ import { getRevision, print, printHtml, sessionLogs } from "kolmafia";
 import { Ascension, Parser, ScriptStatus } from "./parser";
 import { AscensionSummary, Counter } from "./summary";
 import { lastCommitHash } from "./_git_commit";
+import { $location } from "libram";
 
 export const args = Args.create(
   "glog",
@@ -16,9 +17,9 @@ export const args = Args.create(
     run: Args.number({
       help: "Look at the run that occured this many days ago, (0 meaning today, 1 meaning yesterday, etc.). If not given, look at your most recent run.",
     }),
-    farming: Args.string({
+    farming: Args.locations({
       help: "Zones to exclude as part of in-ronin farming, comma-separated.",
-      default: "Barf Mountain",
+      default: [$location`Barf Mountain`],
     }),
     cutoff: Args.number({
       help: "Only display diffs which are larger in magnitude than this number.",
@@ -57,7 +58,7 @@ export function main(command?: string): void {
     return;
   }
 
-  const farming = args.farming.split(",");
+  const farming = args.farming.map((loc) => `${loc}`);
 
   const others = runs.getAllCompleted(args.history).filter((asc) => asc.id !== toAnalyze.id);
 
