@@ -14,6 +14,9 @@ export const args = Args.create(
       help: "Number of days back to look for Grey You logs, including today.",
       default: 7,
     }),
+    compare: Args.number({
+      help: "A specific day to compare your run against, cannot be higher than history",
+    }),
     run: Args.string({
       help: "If this is a number, look at the run that occured this many days ago, (0 meaning today, 1 meaning yesterday, etc.). If this is a file in your data folder, parse it for a log. If not given, look at your most recent run.",
     }),
@@ -174,6 +177,8 @@ class RunCache {
     this.expandCache(history);
     const result = [];
     for (let i = 0; i < history; i++) {
+      if (args.compare !== undefined && args.compare !== i + 1) continue;
+
       result.push(...this.runs[i].filter((asc) => asc.complete));
     }
     return result;
