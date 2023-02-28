@@ -14,6 +14,9 @@ export const args = Args.create(
       help: "Number of days back to look for Grey You logs, including today.",
       default: 7,
     }),
+    compare: Args.number({
+      help: "A specific day to compare your run against",
+    }),
     run: Args.string({
       help: "If this is a number, look at the run that occured this many days ago, (0 meaning today, 1 meaning yesterday, etc.). If this is a file in your data folder, parse it for a log. If not given, look at your most recent run.",
     }),
@@ -39,7 +42,7 @@ export function main(command?: string): void {
     );
   }
 
-  if (args.history < 0) {
+  if (args.compare ?? args.history < 0) {
     print("Invalid argument for history");
   }
 
@@ -50,7 +53,9 @@ export function main(command?: string): void {
 
   const farming = args.farming.map((loc) => `${loc}`);
 
-  const others = runs.getAllCompleted(args.history).filter((asc) => asc.id !== toAnalyze.id);
+  const others = runs
+    .getAllCompleted(args.compare ?? args.history)
+    .filter((asc) => asc.id !== toAnalyze.id);
 
   const summary = new AscensionSummary(toAnalyze);
   const othersSummary = others.map((run) => new AscensionSummary(run));
@@ -122,9 +127,14 @@ function formatDiff(diff: number | undefined) {
 
 function getRunToAnalyze(runs: RunCache): Ascension | undefined {
   if (!args.run) {
-    const result = runs.getMostRecent(args.history);
+    const result = runs.getMostRecent(args.compare ?? args.history);
     if (!result)
-      print(`Unable to find any recent Grey You runs within the last ${args.history} days.`, "red");
+      print(
+        `Unable to find any recent Grey You runs within the last ${
+          args.compare ?? args.history
+        } days.`,
+        "red"
+      );
     return result;
   }
 
@@ -174,6 +184,8 @@ class RunCache {
     this.expandCache(history);
     const result = [];
     for (let i = 0; i < history; i++) {
+      if (args.compare !== undefined && args.compare !== i + 1) continue;
+
       result.push(...this.runs[i].filter((asc) => asc.complete));
     }
     return result;
