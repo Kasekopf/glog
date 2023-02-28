@@ -3642,7 +3642,7 @@ function normalizeLocationName(location) {
   return location;
 }
 ;// CONCATENATED MODULE: ./src/_git_commit.ts
-var lastCommitHash = "2bc264f";
+var lastCommitHash = "c1cce6f";
 ;// CONCATENATED MODULE: ./node_modules/libram/dist/utils.js
 function utils_createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = utils_unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it.return != null) it.return(); } finally { if (didErr) throw err; } } }; }
 
@@ -4173,6 +4173,9 @@ var args = Args.create("glog", 'This is a script to analyze your Grey You log. R
     help: "Number of days back to look for Grey You logs, including today.",
     default: 7
   }),
+  compare: Args.number({
+    help: "A specific day to compare your run against"
+  }),
   run: Args.string({
     help: "If this is a number, look at the run that occured this many days ago, (0 meaning today, 1 meaning yesterday, etc.). If this is a file in your data folder, parse it for a log. If not given, look at your most recent run."
   }),
@@ -4185,6 +4188,8 @@ var args = Args.create("glog", 'This is a script to analyze your Grey You log. R
   })
 });
 function main(command) {
+  var _args$compare, _args$compare2;
+
   Args.fill(args, command);
 
   if (args.help) {
@@ -4196,7 +4201,7 @@ function main(command) {
     (0,external_kolmafia_namespaceObject.print)("Running glog version [".concat(lastCommitHash !== null && lastCommitHash !== void 0 ? lastCommitHash : "custom-built", "] in KoLmafia r").concat((0,external_kolmafia_namespaceObject.getRevision)()));
   }
 
-  if (args.history < 0) {
+  if ((_args$compare = args.compare) !== null && _args$compare !== void 0 ? _args$compare : args.history < 0) {
     (0,external_kolmafia_namespaceObject.print)("Invalid argument for history");
   }
 
@@ -4204,7 +4209,7 @@ function main(command) {
   var toAnalyze = getRunToAnalyze(runs);
   if (!toAnalyze) return;
   var farming = args.farming.map(loc => "".concat(loc));
-  var others = runs.getAllCompleted(args.history).filter(asc => asc.id !== toAnalyze.id);
+  var others = runs.getAllCompleted((_args$compare2 = args.compare) !== null && _args$compare2 !== void 0 ? _args$compare2 : args.history).filter(asc => asc.id !== toAnalyze.id);
   var summary = new AscensionSummary(toAnalyze);
   var othersSummary = others.map(run => new AscensionSummary(run));
   var averageRun = Counter.average.apply(Counter, main_toConsumableArray(othersSummary.map(s => s.turns_spent)));
@@ -4263,8 +4268,10 @@ function formatDiff(diff) {
 
 function getRunToAnalyze(runs) {
   if (!args.run) {
-    var result = runs.getMostRecent(args.history);
-    if (!result) (0,external_kolmafia_namespaceObject.print)("Unable to find any recent Grey You runs within the last ".concat(args.history, " days."), "red");
+    var _args$compare3, _args$compare4;
+
+    var result = runs.getMostRecent((_args$compare3 = args.compare) !== null && _args$compare3 !== void 0 ? _args$compare3 : args.history);
+    if (!result) (0,external_kolmafia_namespaceObject.print)("Unable to find any recent Grey You runs within the last ".concat((_args$compare4 = args.compare) !== null && _args$compare4 !== void 0 ? _args$compare4 : args.history, " days."), "red");
     return result;
   } // If args.run is a number, load that run from the cache
 
@@ -4331,6 +4338,7 @@ var RunCache = /*#__PURE__*/function () {
       var result = [];
 
       for (var i = 0; i < history; i++) {
+        if (args.compare !== undefined && args.compare !== i + 1) continue;
         result.push.apply(result, main_toConsumableArray(this.runs[i].filter(asc => asc.complete)));
       }
 
